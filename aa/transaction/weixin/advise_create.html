@@ -1,0 +1,211 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0"/>
+    <meta name="format-detection" content="telephone=no,email=no,date=no,address=no">
+    <title>投诉建议</title>
+    <link rel="stylesheet" type="text/css" href="../css/api.css" />
+    <style type="text/css">
+    html,body{
+        height: 100%;
+       
+    }
+    #wrap{
+        height: 100%;
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        -webkit-box-orient: vertical;
+        -webkit-flex-flow: column;
+               flex-flow: column;
+    }
+    #header{
+        text-align: center; background-color: #81a9c3; color: #fff;
+        width: 100%;
+    }
+    #header h1{
+        font-size: 20px; height: 44px; line-height: 44px; margin: 0em; color: #fff;
+    }
+    #main{
+        -webkit-box-flex: 1; 
+        -webkit-flex: 1;
+        flex: 1;
+        background-color: #FFFFFF
+         
+    }
+     #main div{
+        width:100%;
+       margin: 10px;
+    }
+    #main div input,select{
+        width:80%;
+    }
+    #submit{
+    	width:200px;
+    	margin-left: 25%;
+    	margin-right:25%;
+    }
+    #telId{
+    margin-left: 20%;
+    color:#FF0000;
+    
+    }
+    #footer{
+        height: 30px; line-height: 30px;
+        width: 100%;
+        text-align: center;
+    }
+    a{
+    margin-left: 70%;
+    }
+    .con{font-size: 28px; text-align: center;}
+    </style>
+    <script type="text/javascript" src="./script/api.js"></script>
+	<script type="text/javascript">
+		/*当鼠标离开关联手机号文本框时，提示文本及样式*/    
+	function telBlur(){
+	    var tel=document.getElementById("cust_phone");
+	    var telId=document.getElementById("telId");
+	    var reg=/^(13|14|15|17|18)\d{9}$/;
+	    if(tel.value==""){
+	        telId.className="error_prompt";
+	        telId.innerHTML="请输入手机号码";
+	        return false;
+	        }
+	    if(reg.test(tel.value)==false){
+	        telId.className="error_prompt";
+	        telId.innerHTML="号码不正确，请重新输入";
+	        return false;
+	        }
+	        telId.className="ok_prompt";
+	        telId.innerHTML="";
+	        return true;
+	    }  
+	    
+	function toVaild(){
+		var validFlag=telBlur();
+		if(validFlag==true){
+	        //表单提交
+	        	var param = [];
+	        var advice_type = document.getElementById("advice_type");
+	        var fix_type = document.getElementById("fix_type");
+	        var cust_name = document.getElementById("cust_name");
+	        var cust_phone = document.getElementById("cust_phone");
+	        var cust_address = document.getElementById("cust_address");
+	        var order_mark = document.getElementById("order_mark");
+	        param.push("advice_type="+advice_type.value);
+	        param.push("&fix_type="+fix_type.value);
+	        param.push("&cust_name="+cust_name.value);
+	        param.push("&cust_phone="+cust_phone.value);
+	        param.push("&cust_address="+cust_address.value);
+	        param.push("&order_mark="+order_mark.value);
+	        ajax("/csc/order/adviseSubmit.action", fnSucc, param.join(""));
+	     }
+	}  
+	
+	//最后把代码封装起来,封装起来以后，要给这个函数加上一个参数url.参数是为了替换要读取的文件名
+	function ajax(url,fnSucc,param){
+	    if(window.XMLHttpRequest) {
+            var oAjax = new XMLHttpRequest();
+        }
+        else {
+            var oAjax = new ActiveXObject("Microsoft.XMLHTTP");//IE6浏览器创建ajax对象
+        }
+        oAjax.open("POST",url,true);//把要读取的参数的传过来。
+        oAjax.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+        oAjax.send(param);
+        oAjax.onreadystatechange=function()  {
+            if(oAjax.readyState==4) {
+                if(oAjax.status==200) {
+                    fnSucc(oAjax.responseText);//成功的时候调用这个方法
+                }
+                else {
+                    if(fnfiled) {
+                        fnField(oAjax.status);
+                    }
+                }
+            }
+        };
+	}
+	
+	function fnSucc(data){
+		var dataObj = eval("(" + data + ")");
+		var resultCode = dataObj.resultCode;
+		var resultMsg = dataObj.resultMsg;
+		alert(resultMsg);
+		if(resultCode == "0000"){
+			window.location.reload();
+		} 
+	}
+	
+	function show_fix(){
+		var advice_type = document.getElementById("advice_type");
+		var index = advice_type.selectedIndex;
+		var value = advice_type.options[index].value;
+		var fix_type_div = document.getElementById("fix_type_div");
+		if(value != "2"){
+			fix_type_div.style.display="none";
+		}else{
+			fix_type_div.style.display="";
+		}
+	} 
+	
+	</script>
+</head>
+<body>
+    <div id="wrap">
+        <div id="header">
+            <h1>投诉建议</h1>
+        </div>
+        <form id="advise_form" method="post">
+	        <div id="main">
+	        	<div>
+		       		 类型：
+		        	<select name="advice_type" id="advice_type" onchange="show_fix();">
+						<option value="2">维护类</option>
+						<option value="4">建议类</option>
+						<option value="1">咨询类</option>
+						<option value="3">投诉类</option>
+					</select>
+				</div>
+				<br />
+				<div id="fix_type_div">
+					维护类型：
+		        	<select name="fix_type" id="fix_type">
+						<option value="10">暖气不热</option>
+						<option value="11">暖气漏水</option>
+					</select>
+				</div>
+				<br />
+				<div>
+				姓名：
+				<input type="text" name="cust_name" id="cust_name" required="required">
+				</div>
+				<br />
+				<div>
+				电话：
+				<input type="text" id="cust_phone" name="cust_phone" required="required" onblur="telBlur()"> 
+				</div>
+				<span id="telId"></span>
+				<br />
+				<div>
+				地址：
+				<input type="text" name="cust_address" id="cust_address">
+				</div>
+				<br />
+				<div>
+				内容：
+				<textarea rows="4" cols="30" name="order_mark" id="order_mark"></textarea>
+				</div>
+				<br />
+				<input type="button" id="submit" value="提交" onclick="toVaild()">
+				<a href="advise_query.html">投诉建议查询</a>
+	        </div>
+        </form>
+        <div id="footer">
+            
+        </div>
+    </div>
+</body>
+</html>

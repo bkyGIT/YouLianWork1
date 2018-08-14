@@ -1,0 +1,234 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport"
+	content="maximum-scale=1.0,minimum-scale=1.0,user-scalable=0,width=device-width,initial-scale=1.0" />
+<meta name="format-detection"
+	content="telephone=no,email=no,date=no,address=no">
+<title>投诉建议查询</title>
+<link rel="stylesheet" type="text/css" href="../css/api.css" />
+<style type="text/css">
+html,body {
+	height: 100%;
+}
+
+#wrap {
+	height: 100%;
+	display: -webkit-box;
+	display: -webkit-flex;
+	display: flex;
+	-webkit-box-orient: vertical;
+	-webkit-flex-flow: column;
+	flex-flow: column;
+}
+
+#header {
+	text-align: center;
+	background-color: #81a9c3;
+	color: #fff;
+	width: 100%;
+}
+
+#header h1 {
+	font-size: 20px;
+	height: 44px;
+	line-height: 44px;
+	margin: 0em;
+	color: #fff;
+}
+
+#main {
+	-webkit-box-flex: 1;
+	-webkit-flex: 1;
+	flex: 1;
+	background-color: #FFFFFF
+}
+
+#phone input {
+	width: 60%;
+	margin-left: 50px;
+	margin-top: 50px;
+}
+
+#indentifyCode {
+	width: 60%;
+	margin-left: 50px;
+}
+
+#query {
+	width: 200px;
+	margin: 20%;
+}
+
+#telId {
+	margin-left: 20%;
+	color: #FF0000;
+}
+
+#footer {
+	height: 30px;
+	line-height: 30px;
+	background-color: #81a9c3;
+	width: 100%;
+	text-align: center;
+}
+
+#footer h5 {
+	color: white;
+}
+
+.con {
+	font-size: 28px;
+	text-align: center;
+}
+</style>
+<script type="text/javascript" src="./script/api.js"></script>
+<script type="text/javascript">
+
+	//设置按钮不可用
+	function setDisabled(){
+		var oBtn = document.getElementById("getCodeBtn");
+	    oBtn.disabled = "disabled";
+	    var codeTime = document.getElementById("codeTip");
+	    codeTime.style.display="";
+	    //释放按钮
+	    window.setTimeout("setAbled()",20000);
+	}
+	
+	function setAbled(){
+		var oBtn = document.getElementById("getCodeBtn");
+	    oBtn.disabled = "";
+		var codeTime = document.getElementById("codeTip");
+	    codeTime.style.display="none"; 
+	}
+    
+	/*当鼠标离开关联手机号文本框时，提示文本及样式*/
+	function telBlur() {
+		var tel = document.getElementById("tel");
+		var telId = document.getElementById("telId");
+		var reg = /^(13|14|15|17|18)\d{9}$/;
+		if (tel.value == "") {
+			telId.className = "error_prompt";
+			telId.innerHTML = "请输入手机号码";
+			return false;
+		}
+		if (reg.test(tel.value) == false) {
+			telId.className = "error_prompt";
+			telId.innerHTML = "号码不正确，请重新输入";
+			return false;
+		}
+		telId.className = "ok_prompt";
+		telId.innerHTML = "";
+		return true;
+	}
+
+	function validCode(){
+		var codeInput = document.getElementById("indentifyCode");
+		if(codeInput.value == undefined || codeInput.value == ""){
+			return false;
+		}
+		return true;
+	}
+	function toQuery() {
+		var validFlag = telBlur();
+		var codeFlag = validCode();
+		if (validFlag == false) {
+			alert("号码不正确！");
+			return;
+		}
+		if(codeFlag == false){
+			alert("请输入验证码！");
+			return;
+		}
+		
+		var tel = document.getElementById("tel");
+		var codeNum = document.getElementById("indentifyCode");
+		var param = [];
+		param.push("phone="+tel.value);
+		param.push("&codeNum="+codeNum.value);
+		ajax("/csc/order/adviseQuery.action", succResult, param.join(""));
+	}
+
+	function toGetIndentify() {
+		if (telBlur()) {
+			//发送验证码
+			var tel = document.getElementById("tel");
+			var param = [];
+			param.push("phone="+tel.value);
+			ajax("/csc/order/adviseSendCode.action", fnSucc, param.join(""));
+			setDisabled();
+		} else {
+			alert("请输入正确手机号码！");
+		}
+	}
+	
+	function succResult(data){
+		var dataObj = eval("(" + data + ")");
+		if(dataObj.resultCode != "0000"){
+			alert(dataObj.resultMsg);
+		}else{
+			window.location.href="/csc/order/adviseQueryData.action?phone="+dataObj.resultData;
+		}
+	}
+	//最后把代码封装起来,封装起来以后，要给这个函数加上一个参数url.参数是为了替换要读取的文件名
+	function ajax(url, fnSucc, param) {
+		if (window.XMLHttpRequest) {
+			var oAjax = new XMLHttpRequest();
+		} else {
+			var oAjax = new ActiveXObject("Microsoft.XMLHTTP");//IE6浏览器创建ajax对象
+		}
+		oAjax.open("POST", url, true);//把要读取的参数的传过来。
+		oAjax.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		oAjax.send(param);
+		oAjax.onreadystatechange = function() {
+			if (oAjax.readyState == 4) {
+				if (oAjax.status == 200) {
+					fnSucc(oAjax.responseText);//成功的时候调用这个方法
+				} else {
+					fnField(oAjax.status);
+				}
+			}
+		};
+	}
+
+	function fnSucc(data) {
+		var dataObj = eval("(" + data + ")");
+		var resultCode = dataObj.resultCode;
+		var resultMsg = dataObj.resultMsg;
+		alert(resultMsg);
+		if(resultCode == "0000"){
+			setDisabled();
+		}
+	}
+	
+	function fnField(data){
+		alert("发送验证码失败！");
+	}
+</script>
+</head>
+<body>
+	<div id="wrap">
+		<div id="header">
+			<h1>投诉建议查询</h1>
+		</div>
+		<div id="main">
+			<div id="phone">
+				<!--电话：-->
+				<input type="text" id="tel" required="required" placeholder="请输入电话号码" onblur="telBlur()"> <span id="telId"></span>
+			</div>
+			<br/>
+			<div>
+				<!--验证码：-->
+				<input type="text" id="indentifyCode" placeholder="请输入验证码">
+				<input type="button" id="getCodeBtn" value="获取验证码" onclick="toGetIndentify();"><span id="codeTip" style="display:none;color: red;font-size: 12px;">20s后可重新发送</span>
+			</div>
+			<br/> 
+			<input type="button" id="query" value="查询" onclick="toQuery()">
+		</div>
+		<div id="footer">
+			<!--<h5>Copyright &copy;<span id="year"></span> </h5>-->
+		</div>
+	</div>
+</body>
+</html>
