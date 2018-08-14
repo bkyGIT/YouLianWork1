@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yl.transaction.weixin.dao.WeixinDao">
+
+	<!--根据工号和部门ID获取流转方式 -->
+	<select id="getCirType" resultType="java.util.Map">
+		select MAXACCEPT, OPR_ID, DEPT_ID, CIR_TYPE from T_WX_CIRCULATION where 1=1 
+		<if test="oprID != null and oprID != ''">
+		 AND OPR_ID=${oprID}
+		</if>
+		<if test="deptID != null and deptID != ''">
+		 and DEPT_ID=${deptID}
+		</if>
+	</select>
+	
+	<insert id="setCirType" parameterType="java.util.Map">
+		insert into T_WX_CIRCULATION (MAXACCEPT, OPR_ID, DEPT_ID, CIR_TYPE) values (${maxaccept}, ${oprID}, ${deptID}, ${cirType})
+	</insert>
+	
+	<update id="updateCirType" parameterType="java.util.Map">
+		update T_WX_CIRCULATION set OPR_ID=${oprID}, DEPT_ID=${deptID}, CIR_TYPE=${cirType} where MAXACCEPT=${maxaccept}
+	</update>
+</mapper>  

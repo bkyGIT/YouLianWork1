@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yl.transaction.knowledge.dao.KnowledgeDao">
+
+	<!--获取所有知识库类别 -->
+	<select id="getAllknowledgeType" resultType="java.util.Map" parameterType="java.util.Map">
+		select code_key from t_common_code group by code_key
+	</select>
+	
+	<!--根据编码值获取编码信息 -->
+	<select id="getKonwledgeByKey" resultType="java.util.Map" parameterType="String">
+		select maxaccept, code_key,code_id,code_name,code_des from t_common_code where code_key=#{codeKey}
+	</select>
+	
+	<!-- 新增知识库 -->
+	<insert id="addKnowledge" parameterType="java.util.Map">
+		insert into t_common_code (maxaccept,code_key,code_id,code_name) values(${maxaccept}, #{codeKey}, #{codeID}, #{codeName})
+	</insert>
+	
+	<!--根据ID修改 -->
+	<update id="updateKnowledgeByMaxaccept" parameterType="java.util.Map">
+		UPDATE t_common_code SET  code_id=#{codeID}, code_name=#{codeName} where MAXACCEPT=${maxaccept}
+	</update>
+	
+	<!-- 删除知识库 -->
+	<delete id="delKnowledgeByMaxaccept" parameterType="String">
+		delete from t_common_code where maxaccept=${maxaccept}
+	</delete>
+</mapper>  

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yl.common.user.dao.UserDao">
+
+	<resultMap type="com.yl.common.user.pojo.UserView" id="userView">
+		<result column="MAXACCEPT" property="maxaccept" />
+		<result column="USER_ACCOUNT" property="userAccount" />
+		<result column="USER_PWD" property="userPwd" />
+		<result column="USER_LEVEL" property="userLevel" />
+		<result column="DEPT_CODE" property="deptCode" />
+		<result column="DEPT_TYPE" property="deptType" />
+		<result column="USER_NAME" property="userName" />
+		<result column="PHONE" property="phone" />
+		<result column="TEL" property="tel" />
+		<result column="ADDRESS" property="address" />
+		<result column="USER_ROLE" property="userRole" />
+		<result column="ROLE_NAME" property="roleName" />
+		<result column="ROLE_MENUS" property="roleMenus" />
+		<result column="ROLE_LEVEL" property="roleLevel" />
+	</resultMap>
+
+
+	<!--自己配置的查询表所有数据的sql -->
+	<select id="getUserView" resultMap="userView" parameterType="String">
+		select A.MAXACCEPT,
+	       A.USER_ACCOUNT,
+	       A.USER_PWD,
+	       A.USER_LEVEL,
+	       A.DEPT_CODE,
+	       C.DEPT_TYPE,
+	       A.USER_NAME,
+	       A.PHONE,
+	       A.TEL,
+	       A.ADDRESS,
+	       A.USER_ROLE,
+	       B.ROLE_NAME,
+	       B.ROLE_MENUS,
+	       B.ROLE_LEVEL
+	  from t_user A, T_ROLE B, t_dept C
+	 where A.USER_ROLE = B.MAXACCEPT AND A.DEPT_CODE = C.MAXACCEPT 
+		<if test="maxaccept != null and maxaccept != ''">
+		 AND A.MAXACCEPT=#{maxaccept}
+		</if>
+	</select>
+	
+	<!-- 根据部门和角色获取人员信息 -->
+	<select id="getUserByParm" resultType="java.util.Map" parameterType="java.util.Map">
+		select A.MAXACCEPT,USER_ACCOUNT,USER_PWD,USER_LEVEL,DEPT_CODE,USER_NAME,PHONE,TEL,ADDRESS,USER_ROLE,ROLE_NAME,ROLE_MENUS,ROLE_DES,ROLE_LEVEL from t_user a, t_role b where a.user_role=b.maxaccept
+		<if test="deptCode != null and deptCode != ''">
+		 AND a.DEPT_CODE=#{deptCode}
+		</if>
+		<if test="roleLevel != null and roleLevel != ''">
+		 AND b.ROLE_LEVEL=#{roleLevel}
+		</if>
+	</select>
+	
+	<select id="getUserInfoByRoleAndDept" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.maxaccept, a.user_account, a.user_pwd, a.user_level, a.dept_code, a.user_name, a.phone, a.tel, a.address, a.user_role, a.vos_account, a.vos_pwd 
+		from t_user a, t_role b, t_dept c where a.user_role=b.maxaccept and a.dept_code=c.maxaccept 
+		and b.role_level=${roleLevel} and c.dept_type=#{deptType}
+	</select>
+</mapper>  

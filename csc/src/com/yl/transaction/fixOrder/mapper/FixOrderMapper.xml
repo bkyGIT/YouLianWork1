@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yl.transaction.fixOrder.dao.FixOrderDao">
+
+	<!--获取全部工单 -->
+	<select id="getAllOrder" resultType="java.util.Map">
+		select MAXACCEPT,ORDER_TYPE,ORDER_TYPE_NAME,FIX_TYPE,FIX_TYPE_NAME,OPR_ID,OPR_NAME,OPR_DEPT_ID,CUST_ID,CUST_NAME,ORDER_STATUS,ORDER_STATUS_NAME,FIXUSER_ID,FIXUSER_NAME,FIX_DEPT_ID,ORDER_DGREE,
+       ORDER_DGREE_NAME,ORDER_MARK,CREAT_TIME,UPDATE_TIME,FIX_MARK,TOFIXDEPT_TIME,TOFIXPERSON_TIME,COMMIT_TIME,RETURN_VISIT_TIME,PHONE,CUST_ADDRESS
+		  from (
+		  select a.MAXACCEPT,
+		  a.ORDER_TYPE, (select CODE_NAME from t_common_code where code_key='ORDER_TYPE' and code_id=a.order_type) ORDER_TYPE_NAME, 
+		  a.FIX_TYPE, (select CODE_NAME from t_common_code where code_key='FIX_TYPE' and code_id=a.FIX_TYPE) FIX_TYPE_NAME, 
+		  a.OPR_ID,a.OPR_NAME,a.OPR_DEPT_ID,a.CUST_ID,a.CUST_NAME,
+		  a.ORDER_STATUS,(select CODE_NAME from t_common_code where code_key='ORDER_STATUS' and code_id=a.ORDER_STATUS) ORDER_STATUS_NAME, 
+		  a.FIXUSER_ID,a.FIXUSER_NAME,a.FIX_DEPT_ID,
+		  a.ORDER_DGREE, (select CODE_NAME from t_common_code where code_key='ORDER_DGREE' and code_id=a.ORDER_DGREE) ORDER_DGREE_NAME, 
+		  a.ORDER_MARK,to_char(a.CREAT_TIME,'yyyy-mm-dd HH24:mi:ss') CREAT_TIME,a.UPDATE_TIME,a.FIX_MARK,
+		  to_char(a.TOFIXDEPT_TIME,'yyyy-mm-dd HH24:mi:ss') TOFIXDEPT_TIME,to_char(a.TOFIXPERSON_TIME,'yyyy-mm-dd HH24:mi:ss') TOFIXPERSON_TIME,
+		  to_char(a.COMMIT_TIME,'yyyy-mm-dd HH24:mi:ss') COMMIT_TIME,to_char(a.RETURN_VISIT_TIME,'yyyy-mm-dd HH24:mi:ss') RETURN_VISIT_TIME, a.PHONE,CUST_ADDRESS, rownum rn from  
+		  t_order a where 1=1
+		  <if test="orderStatus != null and orderStatus != ''">
+			 AND a.ORDER_STATUS in (${orderStatus})
+		  </if>
+		  <if test="roleLevel == '1'.toString()">
+			 AND a. FIX_DEPT_ID = #{fixDeptID} 
+		  </if>
+		  <if test="roleLevel == '2'.toString()">
+			 AND a.FIXUSER_ID = #{fixID} 
+		  </if>
+		  
+		  <if test="beginTime != null and beginTime != ''">
+			 AND a.CREAT_TIME >= #{beginTime} 
+		  </if>
+		  <if test="endTime != null and endTime != ''">
+		  	<![CDATA[ AND a.CREAT_TIME <= #{endTime}]]>
+		  </if>
+		  <if test="order_type != null and order_type!=''">
+			 AND a.ORDER_TYPE = #{order_type} 
+		  </if>
+		  <if test="fix_type != null and fix_type!=''">
+			 AND FIX_TYPE = #{fix_type} 
+		  </if>
+		  order by a.creat_time desc
+		) t 
+		where rn between (${page} - 1) * ${rows} + 1 and ${page} * ${rows}
+	</select>
+		
+	<select id="queryIntervalOrder" resultType="java.util.Map" parameterType="java.util.Map">
+		select a.MAXACCEPT,
+		  a.ORDER_TYPE, (select CODE_NAME from t_common_code where code_key='ORDER_TYPE' and code_id=a.order_type) ORDER_TYPE_NAME, 
+		  a.FIX_TYPE, (select CODE_NAME from t_common_code where code_key='FIX_TYPE' and code_id=a.FIX_TYPE) FIX_TYPE_NAME, 
+		  a.OPR_ID,a.OPR_NAME,a.OPR_DEPT_ID,a.CUST_ID,a.CUST_NAME,
+		  a.ORDER_STATUS,(select CODE_NAME from t_common_code where code_key='ORDER_STATUS' and code_id=a.ORDER_STATUS) ORDER_STATUS_NAME, 
+		  a.FIXUSER_ID,a.FIXUSER_NAME,a.FIX_DEPT_ID,
+		  a.ORDER_DGREE, (select CODE_NAME from t_common_code where code_key='ORDER_DGREE' and code_id=a.ORDER_DGREE) ORDER_DGREE_NAME, 
+		  a.ORDER_MARK,to_char(a.CREAT_TIME,'yyyy-mm-dd HH24:mi:ss') CREAT_TIME,a.UPDATE_TIME,a.FIX_MARK,
+		  to_char(a.TOFIXDEPT_TIME,'yyyy-mm-dd HH24:mi:ss') TOFIXDEPT_TIME,to_char(a.TOFIXPERSON_TIME,'yyyy-mm-dd HH24:mi:ss') TOFIXPERSON_TIME,
+		  to_char(a.COMMIT_TIME,'yyyy-mm-dd HH24:mi:ss') COMMIT_TIME,to_char(a.RETURN_VISIT_TIME,'yyyy-mm-dd HH24:mi:ss') RETURN_VISIT_TIME, a.PHONE,CUST_ADDRESS, rownum rn from  
+		  t_order a where 1=1
+		  <if test="orderStatus != null and orderStatus != ''">
+			 AND a.ORDER_STATUS in (${orderStatus})
+		  </if>
+		  <if test="roleLevel == '1'.toString()">
+			 AND a. FIX_DEPT_ID = #{fixDeptID} 
+		  </if>
+		  <if test="roleLevel == '2'.toString()">
+			 AND a.FIXUSER_ID = #{fixID} 
+		  </if>
+		  
+		  <if test="beginTime != null and beginTime != ''">
+			 AND a.CREAT_TIME >= #{beginTime} 
+		  </if>
+		  <if test="endTime != null and endTime != ''">
+		  	<![CDATA[ AND a.CREAT_TIME <= #{endTime}]]>
+		  </if>
+		  <if test="order_type != null and order_type!=''">
+			 AND a.ORDER_TYPE = #{order_type} 
+		  </if>
+		  <if test="fix_type != null and fix_type!=''">
+			 AND FIX_TYPE = #{fix_type} 
+		  </if>
+		  order by a.creat_time desc
+	</select>
+
+	<!--分页查询总工单 -->
+	<select id="getTotalOrder" resultType="String">
+		select count(1) TOTAL from
+		t_order where 1=1
+		<if test="orderStatus != null and orderStatus != ''">
+			 AND ORDER_STATUS in (${orderStatus}) 
+		</if>
+		<if test="roleLevel == '1'.toString()">
+			 AND FIX_DEPT_ID = #{fixDeptID} 
+	    </if>
+	    <if test="roleLevel == '2'.toString()">
+		 AND FIXUSER_ID = #{fixID} 
+	    </if>
+	</select>
+	
+	<!-- 工单下发至维护人员 -->
+	<update id="sendToFix" parameterType="java.util.Map">
+		update t_order set order_status=#{orderStatus},update_time=sysdate,TOFIXPERSON_TIME=sysdate
+		<if test="fixUserID != null and fixUserID != ''">
+			 ,fixuser_id=#{fixUserID}
+	    </if>
+	    <if test="fixUserName != null and fixUserName != ''">
+			,fixuser_name=#{fixUserName}
+	    </if>
+	    <if test="fixDeptID != null and fixDeptID != ''">
+			,fix_dept_id=#{fixDeptID}
+	    </if>
+	      where maxaccept in (${ids})
+	</update>
+	
+	<!-- 工单提交-->
+	<update id="commitOrder" parameterType="java.util.Map">
+		update t_order set order_status=#{orderStatus},update_time=sysdate,COMMIT_TIME=sysdate,FIX_MARK=#{fix_mark}
+		<if test="fixed_temp != null and fixed_temp != ''">
+			,FIXED_TEMP=#{fixed_temp}
+		</if>
+	      where maxaccept in (${ids})
+	</update>
+	
+	<!--维护工单查询获取工单列表 -->
+	<select id="getFixOrderQueryList" resultType="java.util.Map">
+		select MAXACCEPT,ORDER_TYPE,ORDER_TYPE_NAME,FIX_TYPE,FIX_TYPE_NAME,OPR_ID,OPR_NAME,OPR_DEPT_ID,CUST_ID,CUST_NAME,ORDER_STATUS,ORDER_STATUS_NAME,FIXUSER_ID,FIXUSER_NAME,FIX_DEPT_ID,ORDER_DGREE,
+       ORDER_DGREE_NAME,ORDER_MARK,CREAT_TIME,UPDATE_TIME,FIX_MARK,TOFIXDEPT_TIME,TOFIXPERSON_TIME,COMMIT_TIME,RETURN_VISIT_TIME,PHONE,CUST_ADDRESS
+		  from (
+		  select a.MAXACCEPT,
+		  a.ORDER_TYPE, (select CODE_NAME from t_common_code where code_key='ORDER_TYPE' and code_id=a.order_type) ORDER_TYPE_NAME, 
+		  a.FIX_TYPE, (select CODE_NAME from t_common_code where code_key='FIX_TYPE' and code_id=a.FIX_TYPE) FIX_TYPE_NAME, 
+		  a.OPR_ID,a.OPR_NAME,a.OPR_DEPT_ID,a.CUST_ID,a.CUST_NAME,
+		  a.ORDER_STATUS,(select CODE_NAME from t_common_code where code_key='ORDER_STATUS' and code_id=a.ORDER_STATUS) ORDER_STATUS_NAME, 
+		  a.FIXUSER_ID,a.FIXUSER_NAME,a.FIX_DEPT_ID,
+		  a.ORDER_DGREE, (select CODE_NAME from t_common_code where code_key='ORDER_DGREE' and code_id=a.ORDER_DGREE) ORDER_DGREE_NAME, 
+		  a.ORDER_MARK,to_char(a.CREAT_TIME,'yyyy-mm-dd HH24:mi:ss') CREAT_TIME,a.UPDATE_TIME,a.FIX_MARK,
+		  to_char(a.TOFIXDEPT_TIME,'yyyy-mm-dd HH24:mi:ss') TOFIXDEPT_TIME,to_char(a.TOFIXPERSON_TIME,'yyyy-mm-dd HH24:mi:ss') TOFIXPERSON_TIME,
+		  to_char(a.COMMIT_TIME,'yyyy-mm-dd HH24:mi:ss') COMMIT_TIME,to_char(a.RETURN_VISIT_TIME,'yyyy-mm-dd HH24:mi:ss') RETURN_VISIT_TIME, a.PHONE,CUST_ADDRESS, rownum rn from  
+		  t_order a where 1=1 
+		  <if test="orderStatus != null and orderStatus != ''">
+			 AND a.ORDER_STATUS in (${orderStatus})
+		  </if>
+		  <if test="roleLevel == '1'.toString()">
+			 AND a. FIX_DEPT_ID = #{fixDeptID} 
+		  </if>
+		  <if test="roleLevel == '2'.toString()">
+			 AND a.FIXUSER_ID = #{fixID} 
+		  </if>
+		  
+		  <if test="beginTime != null and beginTime != ''">
+			 AND a.CREAT_TIME >= #{beginTime} 
+		  </if>
+		  <if test="endTime != null and endTime != ''">
+		  	<![CDATA[ AND a.CREAT_TIME <= #{endTime}]]>
+		  </if>
+		  <if test="order_type != null and order_type!=''">
+			 AND a.ORDER_TYPE = #{order_type} 
+		  </if>
+		  <if test="fix_type != null and fix_type!=''">
+			 AND FIX_TYPE = #{fix_type} 
+		  </if>
+		  order by a.creat_time desc
+		) t 
+	</select>
+	
+	<!-- 驳回工单提交-->
+	<!-- <update id="commitOrder" parameterType="java.util.Map">
+		update t_order set order_status=#{orderStatus},update_time=sysdate,COMMIT_TIME=sysdate,FIX_MARK=#{fix_mark}
+		<if test="fixed_temp != null and fixed_temp != ''">
+			,FIXED_TEMP=#{fixed_temp}
+		</if>
+	      where maxaccept in (${ids})
+	</update> -->
+	
+	<!-- 获取当前工单状态 -->
+	<select id="getOldStatus" parameterType="java.util.Map" resultType="java.util.Map">
+		select MAXACCEPT, ORDER_STATUS from t_order where maxaccept in (${ids})
+	</select>
+</mapper>  

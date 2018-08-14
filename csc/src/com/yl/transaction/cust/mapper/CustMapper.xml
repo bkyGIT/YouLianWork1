@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yl.transaction.cust.dao.CustDao">
+	<!-- 根据客户ID获取客户信息 -->
+	<select id="getCustInfoByID" resultType="java.util.Map">
+		select MAXACCEPT,CUST_NAME,PHONE,TEL,ADRESS,XQ_CODE,CUST_LD,CUST_DY,CUST_NO,CREATE_TIME from t_cust where maxaccept=${custID}
+	</select>
+</mapper>  

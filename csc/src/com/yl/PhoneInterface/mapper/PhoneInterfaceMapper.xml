@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yl.PhoneInterface.dao.PhoneInterfaceDao">
+	<!-- 根据客户ID获取客户信息 -->
+	<insert id="setPhoneList" parameterType="java.util.Map">
+		insert into t_call_list (maxaccept, seat_id, phone, call_status, create_time) values (${maxaccept}, ${seatID}, #{phone}, '0', sysdate)
+	</insert>
+	
+	<select id="getPhoneList" parameterType="java.util.Map" resultType="java.util.Map">
+		select maxaccept, seat_id, phone, call_status, create_time from t_call_list where seat_id=${seatID} and call_status='0' order by create_time asc
+	</select>
+	
+	<insert id="updatePhoneStatus" parameterType="java.util.Map">
+		update t_call_list set call_status=#{status} where maxaccept=${maxaccept}
+	</insert>
+	
+	<insert id="insertCSInfo" >
+		insert into t_conversation (MAXACCEPT,PHONE,CREATE_TIME,OPR_ID,OPR_NAME, IN_FLAG, UPLOAD_FLAG, ORDER_ID) values (${maxaccept},#{phone},sysdate,#{seatID},#{oprName}, ${inFlag}, 0, ${orderID})
+	</insert>
+	
+	<insert id="insertOnlineFlag" parameterType="java.util.Map">
+		insert into t_online (maxaccept, seat_id, online_flag, create_time) values (${maxaccept}, ${seatID}, ${flag}, sysdate)
+	</insert>
+	
+	<select id="getOnlineFlag" parameterType="java.util.Map" resultType="String">
+		select online_flag from 
+			(select online_flag, rownum rn from 
+				(select online_flag from t_online where seat_id=${seatID}  order by create_time desc
+				)
+			)
+		where rn =1
+	</select>
+	
+	<update id="setOrderCSID" parameterType="java.util.Map">
+		update t_order set cs_id=${csID} where maxaccept=${orderID} and cs_id is null
+	</update>
+	
+	<update id="setOrderOutCSID"  parameterType="java.util.Map">
+		update t_order set out_cs_id=${csID} where maxaccept=${orderID} and out_cs_id is null
+	</update>
+	
+	<select id="getCSBySeatAndPhone" parameterType="java.util.Map" resultType="java.util.Map">
+		select MAXACCEPT,PHONE,CALL_TIME,CONVER_DEGREE,CREATE_TIME,OPR_ID,OPR_NAME,TALK_TIME,HANGUP_TIME,WAIT_LENGTH,TALK_LENGTH,TALK_FLAG,RECORD_FILE,IN_FLAG,TYPE_ID,THE_GUID,CALL_TYPE,UPLOAD_TIME,UPLOAD_FLAG 
+		from t_conversation where PHONE=#{Phone} AND OPR_ID=${SeatID} AND UPLOAD_FLAG=0 order by CREATE_TIME DESC
+	</select>
+	
+	<update id="updateCSInfo" parameterType="java.util.Map">
+		update t_conversation set CALL_TIME=to_date(#{CallTime}, 'yy/mm/dd HH24:MI:ss'), TALK_TIME=to_date(#{TalkTime}, 'yy/mm/dd HH24:MI:ss'), HANGUP_TIME=to_date(#{HangupTime}, 'yy/mm/dd HH24:MI:ss'),WAIT_LENGTH=#{WaitLength}, TALK_LENGTH=#{TalkLength}, 
+		TALK_FLAG=${TalkFlag}, RECORD_FILE=#{RecordFile}, TYPE_ID=#{TypeID}, THE_GUID=#{TheGuid}, CALL_TYPE=#{CallType}, UPLOAD_TIME=sysdate, UPLOAD_FLAG=1, DEPT_CODE=${SeatGroupID} 
+		where MAXACCEPT=${csID}
+	</update>
+	
+	<insert id="insertCSAllInfo" parameterType="java.util.Map">
+		insert into t_conversation (
+		MAXACCEPT,
+		PHONE,
+		CALL_TIME,
+		CREATE_TIME,
+		OPR_ID,
+		DEPT_CODE,
+		OPR_NAME,
+		TALK_TIME,
+		HANGUP_TIME,
+		WAIT_LENGTH,
+		TALK_LENGTH,
+		TALK_FLAG,
+		RECORD_FILE,
+		IN_FLAG,
+		TYPE_ID,
+		THE_GUID,
+		CALL_TYPE,
+		UPLOAD_TIME,
+		UPLOAD_FLAG
+		) values (
+		${maxaccept},
+		#{Phone},
+		to_date(#{CallTime}, 'yy/mm/dd HH24:MI:ss'), 
+		sysdate,
+		#{SeatID},
+		#{SeatGroupID},
+		#{oprName},
+		to_date(#{TalkTime}, 'yy/mm/dd HH24:MI:ss'),
+		to_date(#{HangupTime}, 'yy/mm/dd HH24:MI:ss'),
+		#{WaitLength},
+		#{TalkLength},
+		${TalkFlag},
+		#{RecordFile},
+		${InFlag},
+		#{TypeID},
+		#{TheGuid},
+		#{CallType},
+		sysdate,
+		1
+		 )
+	</insert>
+	
+	<insert id="insertIntoPhone" parameterType="java.util.Map">
+		insert into t_into_call (MAXACCEPT,SEAT_ID,PHONE,CALL_STATUS,CREATE_TIME) values (${maxaccept}, ${seatID},${phone}, 0, sysdate)
+	</insert>
+	
+	<select id="getIntoPhoneBySeatID" parameterType="java.util.Map" resultType="java.util.Map">
+		select MAXACCEPT,SEAT_ID, PHONE,CALL_STATUS,CREATE_TIME from t_into_call where SEAT_ID=#{seatID} and CALL_STATUS=${status} order by CREATE_TIME asc
+	</select>
+	
+	<update id="updateIntoPhoneStatus">
+		update t_into_call set CALL_STATUS=${status} where MAXACCEPT=${maxaccept}
+	</update>
+	
+	<select id="getCustInfo" parameterType="java.util.Map" resultType="java.util.Map">
+		select a.maxaccept, a.cust_name, a.phone, a.tel, a.adress, a.xq_code, a.cust_ld, a.cust_dy, a.cust_no, to_char(a.create_time, 'yyyy-MM-dd HH24:mi:ss') CREATE_TIME, a.pay_info 
+		from t_cust a, t_cust_phone b where a.maxaccept=b.cust_id 
+		<if test="phone != null and phone!=''">
+		 	and b.r_phone=#{phone} 
+	    </if>
+		<if test="likeAdress != null and likeAdress!=''">
+		 	AND adress = #{likeAdress} || '%'
+	    </if>
+	    order by create_time desc
+	</select>
+	
+	<select id="getCustDyInfo" parameterType="java.util.Map" resultType="java.util.Map">
+		select maxaccept, cust_name, phone, tel, adress, xq_code, cust_ld, cust_dy, cust_no, to_char(create_time, 'yyyy-MM-dd HH24:mi:ss') CREATE_TIME, pay_info 
+		from t_cust where 1=1 
+		<if test="likeAdress != null and likeAdress!=''">
+		 	AND adress = #{likeAdress}
+	    </if>
+	    order by adress asc
+	</select>
+	
+	<select id="getOrderInfoByCustID" parameterType="java.util.Map" resultType="java.util.Map">
+		select 
+		  MAXACCEPT,
+		  ORDER_TYPE, (select CODE_NAME from t_common_code where code_key='ORDER_TYPE' and code_id=a.order_type) ORDER_TYPE_NAME, 
+		  FIX_TYPE, (select CODE_NAME from t_common_code where code_key='FIX_TYPE' and code_id=a.FIX_TYPE) FIX_TYPE_NAME, 
+		  OPR_ID,
+		  OPR_NAME,
+		  OPR_DEPT_ID,
+		  CUST_ID,
+		  CUST_NAME,
+		  ORDER_STATUS,
+		  (select CODE_NAME from t_common_code where code_key='ORDER_STATUS' and code_id=a.ORDER_STATUS) ORDER_STATUS_NAME, 
+		  FIXUSER_ID,
+		  FIXUSER_NAME,
+		  FIX_DEPT_ID,
+		  ORDER_DGREE,
+		  ORDER_MARK,
+		  to_char(CREAT_TIME, 'yyyy-MM-dd HH24:mi:ss') CREAT_TIME,
+		  to_char(UPDATE_TIME, 'yyyy-MM-dd HH24:mi:ss') UPDATE_TIME,
+		  FIX_MARK,
+		  to_char(TOFIXDEPT_TIME, 'yyyy-MM-dd HH24:mi:ss') TOFIXDEPT_TIME,
+		  to_char(TOFIXPERSON_TIME, 'yyyy-MM-dd HH24:mi:ss') TOFIXPERSON_TIME,
+		  to_char(COMMIT_TIME, 'yyyy-MM-dd HH24:mi:ss') COMMIT_TIME,
+		  to_char(RETURN_VISIT_TIME, 'yyyy-MM-dd HH24:mi:ss') RETURN_VISIT_TIME,
+		  PHONE,
+		  ORDER_CHANNEL,
+		  CUST_ADDRESS,
+		  CS_ID, 
+		  FIXED_TEMP
+		from t_order a where cust_id=${custID} order by creat_time desc
+	</select>
+	
+	<select id="getOrderInfoByInfo" resultType="java.util.Map" parameterType="java.util.Map">
+		select 
+		  MAXACCEPT,
+		  ORDER_TYPE,
+		  FIX_TYPE,
+		  OPR_ID,
+		  OPR_NAME,
+		  OPR_DEPT_ID,
+		  CUST_ID,
+		  CUST_NAME,
+		  ORDER_STATUS,
+		  (select CODE_NAME from t_common_code where code_key='ORDER_STATUS' and code_id=a.ORDER_STATUS) ORDER_STATUS_NAME, 
+		  FIXUSER_ID,
+		  FIXUSER_NAME,
+		  FIX_DEPT_ID,
+		  ORDER_DGREE,
+		  ORDER_MARK,
+		  to_char(CREAT_TIME, 'yyyy-MM-dd HH24:mi:ss') CREAT_TIME,
+		  to_char(UPDATE_TIME, 'yyyy-MM-dd HH24:mi:ss') UPDATE_TIME,
+		  FIX_MARK,
+		  to_char(TOFIXDEPT_TIME, 'yyyy-MM-dd HH24:mi:ss') TOFIXDEPT_TIME,
+		  to_char(TOFIXPERSON_TIME, 'yyyy-MM-dd HH24:mi:ss') TOFIXPERSON_TIME,
+		  to_char(COMMIT_TIME, 'yyyy-MM-dd HH24:mi:ss') COMMIT_TIME,
+		  to_char(RETURN_VISIT_TIME, 'yyyy-MM-dd HH24:mi:ss') RETURN_VISIT_TIME,
+		  PHONE,
+		  ORDER_CHANNEL,
+		  CUST_ADDRESS,
+		  CS_ID
+		from t_order a where opr_id=${SeatID} and phone=#{Phone} order by creat_time desc
+	</select>
+	
+	<update id="updateNormalPhone" parameterType="java.util.Map">
+		update t_cust set phone=#{normal_phone} where maxaccept=${custID}
+	</update>
+	
+	<update id="updateConvertPhone" parameterType="java.util.Map">
+		update t_cust_phone set f_phone=#{normal_phone} where cust_id=${custID}
+	</update>
+	
+	<insert id="insertConvertPhone" parameterType="java.util.Map">
+		insert into t_cust_phone (maxaccept, r_phone, cust_id, create_time) values (${maxaccept}, #{conn_phone}, ${custID}, sysdate)
+	</insert>
+	
+	<insert id="inserCustInfo" parameterType="java.util.Map">
+		insert into t_cust (maxaccept, cust_name, phone, tel, adress, create_time) values (${maxaccept}, #{cust_name}, #{normal_phone}, #{normal_phone}, #{cust_adress},sysdate)
+	</insert>
+	
+	<insert id="insertRebackOrder" parameterType="java.util.Map">
+		insert into t_order (
+			MAXACCEPT,
+			OPR_ID,
+			OPR_NAME,
+			OPR_DEPT_ID,
+			CREAT_TIME,
+			PHONE,
+			REBACK_STATUS
+		) VALUES (
+			${maxaccept},
+			${oprID},
+			#{oprName},
+			${deptCode},
+			sysdate,
+			#{phone},
+			${rebackStatus}
+		)
+	</insert>
+	
+	<update id="rebackOrder" parameterType="java.util.Map">
+		update t_order set 
+		  ORDER_TYPE=${order_type},
+		  <if test="fix_type != null and fix_type!=''">
+		 	FIX_TYPE=${fix_type},
+	      </if>
+		  CUST_ID=${custID},
+		  CUST_NAME=#{cust_name},
+		  ORDER_STATUS=${order_status},
+		  ORDER_MARK=#{order_mark},
+		  CREAT_TIME=sysdate,
+		  PHONE=#{conn_phone},
+		  ORDER_CHANNEL=${order_channel},
+		  CUST_ADDRESS=#{cust_adress},
+		  REBACK_STATUS=${reback_status}
+		where MAXACCEPT=${maxaccept}
+	</update>
+	
+	<insert id="insertOrder" parameterType="java.util.Map">
+		insert into t_order (
+		  MAXACCEPT,
+		  ORDER_TYPE,
+		  <if test="fix_type != null and fix_type!=''">
+		 	FIX_TYPE,
+	      </if>
+		  OPR_ID,
+		  OPR_NAME,
+		  OPR_DEPT_ID,
+		  CUST_ID,
+		  CUST_NAME,
+		  ORDER_STATUS,
+		  ORDER_MARK,
+		  CREAT_TIME,
+		  PHONE,
+		  ORDER_CHANNEL,
+		  CUST_ADDRESS
+		) values (
+		  ${maxaccept}, 
+		  ${order_type},  
+		  <if test="fix_type != null and fix_type!=''">
+		  	${fix_type},
+		  </if>
+		  ${opr_id}, 
+		  #{opr_name}, 
+		  ${opr_dept_id},
+		  ${custID},
+		  #{cust_name},
+		   ${order_status}, 
+		   #{order_mark}, 
+		   sysdate,
+		   #{conn_phone},
+		   ${order_channel},
+		   #{cust_adress}
+		)
+	</insert>
+	
+	<delete id="removePhoneRelase" parameterType="java.util.Map">
+		delete from t_cust_phone where cust_id=${maxaccept} and r_phone=#{phone_num}
+	</delete>
+	
+	<select id="getConvertPhoneList" parameterType="java.util.Map" resultType="java.util.Map">
+		select maxaccept, f_phone, r_phone, cust_id from t_cust_phone where cust_id=${maxaccept} 
+		<if test="r_phone != null and r_phone!=''">
+	  	 and r_phone = #{r_phone} 
+	    </if>
+		order by create_time desc
+	</select>
+	
+	<select id="getCustInfoByAdress" parameterType="java.util.Map" resultType="java.util.Map">
+		select maxaccept, cust_name, phone, adress, to_char(create_time, 'yyyy-MM-dd HH24:mi:ss') create_time from t_cust where adress = #{cust_address} order by adress asc
+	</select>
+	
+	<select id="getCustInfoByLikeAdress" parameterType="java.util.Map" resultType="java.util.Map">
+		select maxaccept, cust_name, phone, adress, to_char(create_time, 'yyyy-MM-dd HH24:mi:ss') create_time from t_cust where adress like #{query_adress} || '%' order by adress asc
+	</select>
+	
+	<select id="getPhoneStatus" parameterType="java.util.Map" resultType="java.util.Map">
+		select maxaccept, seat_id, status, create_time from 
+		(select maxaccept, seat_id, status, create_time from t_phone_status where seat_id=${seatID} order by create_time desc) 
+		where  rownum=1
+	</select>
+	
+	<insert id="setPhoneStatus" parameterType="java.util.Map">
+		insert into t_phone_status (maxaccept, seat_id, status, create_time) values (${maxaccept}, ${seatID}, ${status}, sysdate)
+	</insert>
+	
+	<select id="getTrunPhoneList" parameterType="java.util.Map" resultType="java.util.Map">
+		select MAXACCEPT, SEAT_ID, TRUN_PHONE, CALL_STATUS from T_TRUN_PHONE where SEAT_ID=${seatID} and CALL_STATUS=0 order by CREATE_TIME DESC
+	</select>
+	
+	<update id="updateTrunPhone" parameterType="java.util.Map">
+		update T_TRUN_PHONE set CALL_STATUS=1 where SEAT_ID=${seatID}
+	</update>
+</mapper>  

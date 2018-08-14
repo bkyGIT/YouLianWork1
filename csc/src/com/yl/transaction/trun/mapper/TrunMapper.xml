@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yl.transaction.trun.dao.TrunDao">
+
+	
+	<select id="getTrunPhoneList" resultType="java.util.Map" parameterType="java.util.Map">
+		select MAXACCEPT, CONN_PHONE, CONN_NAME, DEPT_CODE, DEPT_NAME, CREATE_TIME
+      	from (select MAXACCEPT,
+                   CONN_PHONE,
+                   CONN_NAME,
+                   DEPT_CODE,
+                   (select dept_name from t_dept where maxaccept=a.dept_code) DEPT_NAME,
+                   to_char(CREATE_TIME,'yyyy-mm-dd HH24:mi:ss') CREATE_TIME,
+                   rownum rn
+              from T_CONN_PHONE a where 1=1 
+              <if test="trunPhone != null and trunPhone != '' ">
+              	AND CONN_PHONE=#{trunPhone}
+              </if>
+               <if test="deptID != null and deptID != '' ">
+              	AND DEPT_CODE=#{deptID}
+              </if>
+             order by create_time desc)
+	</select>
+	
+	<insert id="addConnInfo" parameterType="java.util.Map">
+		insert into T_CONN_PHONE (MAXACCEPT, CONN_PHONE, CONN_NAME, DEPT_CODE, CREATE_TIME) values 
+		(${maxaccept},#{connPhone}, #{connName}, ${deptID}, sysdate)
+	</insert>
+	
+	<update id="modifyConnInfoByMax" parameterType="java.util.Map">
+		update T_CONN_PHONE set CONN_PHONE=#{connPhone}, CONN_NAME=#{connName}, DEPT_CODE=${deptID}, CREATE_TIME=sysdate 
+		where maxaccept=${maxaccept}
+	</update>
+	
+	<delete id="delConnInfoInMax" parameterType="java.util.Map">
+		delete from T_CONN_PHONE where maxaccept in (${ids})
+	</delete>
+</mapper>  

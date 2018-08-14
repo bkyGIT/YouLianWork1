@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<!--namespace就是与此文件对应的Dao接口的全路径 -->
+<mapper namespace="com.yl.transaction.test.dao.TestDao">
+
+
+
+	<resultMap type="com.yl.transaction.test.pojo.Test" id="test">
+		<id column="id" property="id" />
+		<result column="ID" property="id" />
+		<result column="NAME" property="name" />
+		<result column="PWD" property="pwd" />
+	</resultMap>
+
+
+	<!--自己配置的查询表所有数据的sql -->
+	<select id="selectByPrimaryKey" resultMap="test">
+		select * FROM TEST
+	</select>
+</mapper>  

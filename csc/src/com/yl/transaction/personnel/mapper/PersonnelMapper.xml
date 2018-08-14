@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>  
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.yl.transaction.personnel.dao.PersonnelDao">
+
+	<!--获取全部人员 -->
+	<!-- <select id="getAllPersonnel" resultType="java.util.Map">
+		select 
+		MAXACCEPT,USER_ACCOUNT,USER_PWD,USER_LEVEL,DEPT_CODE,DEPT_NAME,USER_NAME,PHONE,TEL,ADDRESS,USER_ROLE, ROLE_NAME
+		from 
+		(
+		select MAXACCEPT,USER_ACCOUNT,USER_PWD,USER_LEVEL,DEPT_CODE,DEPT_NAME,USER_NAME,PHONE,TEL,ADDRESS,USER_ROLE,ROLE_NAME, rownum rn 
+		from  (select n.maxaccept,n.user_account,n.user_pwd,n.user_level,n.dept_code,m.dept_name,n.user_name,n.phone,n.tel,n.address,n.user_role,n.role_name from (select a.maxaccept,a.user_account,a.user_pwd,a.user_level,a.dept_code,a.user_name,a.phone,a.tel,a.address,a.user_role,b.role_name from t_user a left join t_role b on a.user_role = b.maxaccept order by MAXACCEPT asc) n left join t_dept m on n.dept_code=m.maxaccept) a 
+		) t
+		where rn between (${page}-1)*${rows}+1 and ${page}*${rows}
+	</select> -->
+	<!--获取全部人员(bky:添加vos账号及密码查询) -->
+	<select id="getAllPersonnel" resultType="java.util.Map">
+		select MAXACCEPT,USER_ACCOUNT,USER_PWD,USER_LEVEL,DEPT_CODE,DEPT_NAME,USER_NAME,PHONE,TEL,ADDRESS,USER_ROLE, ROLE_NAME,VOS_ACCOUNT,VOS_PWD 
+		from (
+		  select MAXACCEPT,USER_ACCOUNT,USER_PWD,USER_LEVEL,DEPT_CODE,DEPT_NAME,USER_NAME,PHONE,TEL,ADDRESS,USER_ROLE,ROLE_NAME,VOS_ACCOUNT,VOS_PWD, rownum rn   
+		  from (
+		    select n.maxaccept,n.user_account,n.user_pwd,n.user_level,n.dept_code,m.dept_name,n.user_name,n.phone,n.tel,n.address,n.user_role,n.role_name,n.vos_account,n.vos_pwd 
+		    from (
+		      select a.maxaccept,a.user_account,a.user_pwd,a.user_level,a.dept_code,a.user_name,a.phone,a.tel,a.address,a.user_role,a.vos_account,a.vos_pwd,b.role_name 
+		      from t_user a left join t_role b on a.user_role = b.maxaccept order by MAXACCEPT asc) n left join t_dept m on n.dept_code=m.maxaccept) a 
+		) t
+		where rn between (${page}-1)*${rows}+1 and ${page}*${rows}
+	</select>
+	
+	<!--分页查询总人员 -->
+	<select id="getTotalPersonnel" resultType="String">
+		select count(1) TOTAL from t_user
+	</select>
+
+	<!-- 增加人员 -->
+	<!-- <insert id="addPersonnel"  parameterType="java.util.Map">
+		insert into t_user (maxaccept,user_account,user_pwd,dept_code,user_name,phone,tel,address,user_role) values (${maxaccept},#{account}, #{pwd},#{dept},#{name},#{phone},#{tel},#{address},#{role})
+	</insert> -->
+	<!-- 增加人员（bky:增加vos账号及密码添加） -->
+	<insert id="addPersonnel"  parameterType="java.util.Map">
+		insert into t_user (maxaccept,user_account,user_pwd,dept_code,user_name,phone,tel,address,user_role,vos_account,vos_pwd) values (${maxaccept},#{account}, #{pwd},#{dept},#{name},#{phone},#{tel},#{address},#{role},#{vos},#{vospwd})
+	</insert>
+	
+	<!--删除人员 -->
+	<delete id="delPersonnelInIDS" parameterType="String">
+		delete from t_user where maxaccept in (${ids})
+	</delete>
+	
+	<!-- 修改人员 -->
+	<!-- <insert id="updatePersonnelByID"  parameterType="java.util.Map">
+		update t_user set user_account=#{account},user_pwd=#{pwd},dept_code=#{dept},user_name=#{name},phone=#{phone},tel=#{tel},address=#{address},user_role=#{role} where maxaccept=${maxaccept}
+	</insert> -->
+	<!-- 修改人员(bky:bky:增加vos账号及密码修改) -->
+	<insert id="updatePersonnelByID"  parameterType="java.util.Map">
+		update t_user set user_account=#{account},user_pwd=#{pwd},dept_code=#{dept},user_name=#{name},phone=#{phone},tel=#{tel},address=#{address},user_role=#{role},vos_account=#{vos},vos_pwd=#{vospwd} where maxaccept=${maxaccept}
+	</insert>
+	
+	<!--根据登录账户获取用户信息 -->
+	<select id="getPersonnelByAccount" resultType="java.util.Map" parameterType="String">
+		select maxaccept,user_account,user_pwd,user_level,dept_code,user_name,phone,tel,address,user_role from t_user where user_account=#{account}
+	</select>
+	
+	<!--bky:根据vos账户获取用户信息 -->
+	<select id="getPersonnelByVos" resultType="java.util.Map" parameterType="String">
+		select maxaccept,user_account,user_pwd,user_level,dept_code,user_name,phone,tel,address,user_role from t_user where vos_account=#{vos}
+	</select>
+</mapper>  
