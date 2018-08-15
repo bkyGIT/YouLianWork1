@@ -10,6 +10,7 @@ public class BrowseClient {
 	public static void main(String[] args) {
 		
 		try {
+                        //将要创建快捷方式的地址传入URI
 			URI uri = new URI("http://111.26.164.245:9090/csc/login.jsp");
 			Desktop desktop = null;
 			if(Desktop.isDesktopSupported()){
